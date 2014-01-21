@@ -1,20 +1,22 @@
 # Category = News
 
+# noloop = start
 #@ This module gets and displays a list of events that occurred on the current
 #@ day of the year from the New York Times.
-
+my ($day, $mnth) = (localtime)[3,4];
+my $month= (qw(january february march april may june july august september october november december))[$mnth];
 my $f_onthisday = "$config_parms{data_dir}/web/onthisday.txt";
 my $f_onthisday_html  = "$config_parms{data_dir}/web/onthisday.html";
 my $f_onthisday_html2 = "$config_parms{data_dir}/web/onthisday_pruned.html";
 
-$p_onthisday = new Process_Item("get_url http://www.nytimes.com/learning/general/onthisday/index.html $f_onthisday_html");
+$p_onthisday = new Process_Item("get_url http://learning.blogs.nytimes.com/on-this-day/$month-$day/ $f_onthisday_html");
 $v_onthisday = new  Voice_Cmd('[Get,Show,Check] on this day');
 $v_onthisday ->set_info('Get or display the daily calendar facts');
 $v_onthisday ->set_authority('anyone');
 
 if ((said $v_onthisday eq 'Get') or (said $v_onthisday eq 'Check')) {
         if (&net_connect_check) {
-            $v_onthisday->respond("Retrieving daily calendar facts...");
+            $v_onthisday->respond("Retrieving $month-$day  daily calendar facts...");
             start $p_onthisday;
         }
 	else {
@@ -32,21 +34,23 @@ if (done_now $p_onthisday) {
 
                                 # Pull out date
 #<B>Monday, December&nbsp;23rd</B>
-    my ($date) = $html =~ /<B>(\S+, \S+?&nbsp;\S+?)<\/B>/i;
+    my ($date) = $html =~ /\S+?On This Day: (\S+ \S+)/i;
 
                                 # Prune down to main table
-    $html =~ s|.+(\<tr.+?Today\'s .+)|$1|is;
+
+    $html =~ s|.*?<tbody>(.*)</table>\s*<p>.*</html>|$1|is;
+#    $html =~ s|.+(\<tr.+?Today\'s .+)|$1|is;
 
                                # Change relative lines to absolute
-    $html =~ s|href="/|href="http://www.nytimes.com/|gi;
-    $html =~ s|href="../|href="http://www.nytimes.com/learning/general/|gi;
-    $html =~ s|src="/|src="http://www.nytimes.com/|gi;
-    $html =~ s|href="archive.html|href="http://www.nytimes.com/learning/general/onthisday/archive.html|gi;
+#    $html =~ s|href="/|href="http://www.nytimes.com/|gi;
+#    $html =~ s|href="../|href="http://www.nytimes.com/learning/general/|gi;
+#    $html =~ s|src="/|src="http://www.nytimes.com/|gi;
+#    $html =~ s|href="archive.html|href="http://www.nytimes.com/learning/general/onthisday/archive.html|gi;
 
 
 
 
-    my $html2 = "<html><body><table>$date\n" . $html ."</table></body></html>";
+    my $html2 = "<html><h1>$date</h1><body><table><tbody>" . $html ."</table></body></html>";
 #   my $text = HTML::FormatText->new(lm => 0, rm => 150)->format(HTML::TreeBuilder->new()->parse($html2));
     my $text = &html_to_text($html2);
 	$text =~ s/<[^>]*>//g;
@@ -76,3 +80,4 @@ if ($Reload) {
           unless &trigger_get('get calendar facts');
     }
 }
+# noloop = stop

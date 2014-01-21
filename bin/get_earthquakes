@@ -97,7 +97,7 @@ if( $parms{d}) {
 }
 
 unlink $f_cnss_merged_txt;
-my $getURLcmd = 'net_ftp -passive 1 -command get -server hazards.cr.usgs.gov ';
+my $getURLcmd = './net_ftp -passive 1 -command get -server hazards.cr.usgs.gov ';
 $getURLcmd .= ' -user anonymous -password anonymous';
 system($getURLcmd . " -file $f_cnss_merged_txt -file_remote cnss/cnss_14.fing ");
 

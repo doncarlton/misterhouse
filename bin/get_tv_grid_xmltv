@@ -663,7 +663,7 @@ sub fetchLoop
 				$channel_image = qq|<img src="/tv/logos/$channel_name.jpg"><br>|;
 			}  
 		}
-
+		$channel_image = lc($channel_image); #DLC need to display lower case file
 		$DBM2{$channel_number} = $channel_name;
 			
 		my $db_data = join($;, $channel_number, $channel_name, $channel_affiliate, $channel_image, $channel_ID);
